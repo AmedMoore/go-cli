@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/akaahmedkamal/go-args"
 )
@@ -38,11 +39,13 @@ func initAppInfo() {
 func NewApp(rawArgs []string) *App {
 	initAppInfo()
 
-	args := args.NewParser(rawArgs)
-	args.Parse()
+	parser := args.NewParser(rawArgs)
+	if err := parser.Parse(); err != nil {
+		log.Fatal(err)
+	}
 
 	return &App{
-		args: args,
+		args: parser,
 		cmds: make([]Command, 0),
 	}
 }
@@ -69,10 +72,11 @@ func (a *App) Register(cmd Command) {
 }
 
 func (a *App) Run() {
-	cmdName, exists := a.args.At(0)
+	cmdName := strings.Join(a.args.Positional(), "/")
+
 	cmd := a.Command(cmdName)
 
-	if !exists || cmd == nil {
+	if cmd == nil {
 		log.Fatal("nothing to do!")
 	}
 
