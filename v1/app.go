@@ -41,15 +41,25 @@ func initAppInfo() {
 func NewApp(rawArgs []string) *App {
 	initAppInfo()
 
-	parser := args.NewParser(rawArgs)
-	if err := parser.Parse(); err != nil {
+	app := new(App)
+
+	// initialize args parser
+	app.args = args.NewParser(rawArgs)
+	if err := app.args.Parse(); err != nil {
 		log.Fatal(err)
 	}
 
-	return &App{
-		args: parser,
-		cmds: make([]Command, 0),
+	// set the app root path
+	exe, err := os.Executable()
+	if err != nil {
+		panic(err)
 	}
+	app.root = filepath.Dir(exe)
+
+	app.cmds = make([]Command, 0)
+	app.vars = make(map[string]interface{})
+
+	return app
 }
 
 func (a *App) Args() *args.ArgsParser {
@@ -86,13 +96,6 @@ func (a *App) Get(name string) interface{} {
 }
 
 func (a *App) Root() string {
-	if a.root == "" {
-		exe, err := os.Executable()
-		if err != nil {
-			panic(err)
-		}
-		a.root = filepath.Dir(exe)
-	}
 	return a.root
 }
 
