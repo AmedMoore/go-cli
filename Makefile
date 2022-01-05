@@ -11,3 +11,7 @@ GO_LDFLAGS= -X $(GO_PKG)/v1.AppName=$(APP_NAME) \
 build:
 	go build -ldflags "$(GO_LDFLAGS)" -o bin/$(APP_NAME) .
 .PHONY: build
+
+test:
+	go test -bench -v ./...
+.PHONY: test
