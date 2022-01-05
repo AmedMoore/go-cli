@@ -99,6 +99,10 @@ func (a *App) Root() string {
 	return a.root
 }
 
+func (a *App) Resolve(path ...string) string {
+	return filepath.Join(append([]string{a.root}, path...)...)
+}
+
 func (a *App) Run() {
 	cmdName := strings.Join(a.args.Positional(), "/")
 
