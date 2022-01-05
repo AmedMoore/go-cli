@@ -16,6 +16,8 @@ var AppBuild string
 type App struct {
 	args *args.ArgsParser
 	cmds []Command
+	vars map[string]interface{}
+	root string
 }
 
 func initAppInfo() {
@@ -69,6 +71,29 @@ func (a *App) Command(name string) Command {
 
 func (a *App) Register(cmd Command) {
 	a.cmds = append(a.cmds, cmd)
+}
+
+func (a *App) Vars() map[string]interface{} {
+	return a.vars
+}
+
+func (a *App) Set(name string, value interface{}) {
+	a.vars[name] = value
+}
+
+func (a *App) Get(name string) interface{} {
+	return a.vars[name]
+}
+
+func (a *App) Root() string {
+	if a.root == "" {
+		exe, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+		a.root = filepath.Dir(exe)
+	}
+	return a.root
 }
 
 func (a *App) Run() {
