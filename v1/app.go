@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -18,6 +19,7 @@ type App struct {
 	cmds   []Command
 	vars   map[string]interface{}
 	exeDir string
+	log    *Logger
 }
 
 func initAppInfo() {
@@ -38,7 +40,7 @@ func initAppInfo() {
 	}
 }
 
-func NewApp(rawArgs []string) *App {
+func NewApp(rawArgs []string, config ...Config) *App {
 	initAppInfo()
 
 	app := new(App)
@@ -58,6 +60,21 @@ func NewApp(rawArgs []string) *App {
 
 	app.cmds = make([]Command, 0)
 	app.vars = make(map[string]interface{})
+
+	if len(config) > 0 {
+		cfg := config[0]
+
+		if cfg.Logger != nil {
+			app.log = cfg.Logger
+		} else {
+			if Mode == AppModeRelease {
+				fname := filepath.Join(app.exeDir, fmt.Sprintf("%s.log", AppName))
+				app.log = NewFileLogger(fname)
+			} else {
+				app.log = NewStdLogger()
+			}
+		}
+	}
 
 	return app
 }
@@ -101,6 +118,14 @@ func (a *App) ExeDir() string {
 
 func (a *App) Resolve(path ...string) string {
 	return filepath.Join(append([]string{a.exeDir}, path...)...)
+}
+
+func (a *App) Log() *Logger {
+	return a.log
+}
+
+func (a *App) Mode() AppMode {
+	return Mode
 }
 
 func (a *App) Run() {
