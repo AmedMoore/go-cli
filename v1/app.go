@@ -63,16 +63,17 @@ func NewApp(rawArgs []string, config ...Config) *App {
 
 	if len(config) > 0 {
 		cfg := config[0]
-
 		if cfg.Logger != nil {
 			app.log = cfg.Logger
+		}
+	}
+
+	if app.log == nil {
+		if Mode == AppModeRelease {
+			fname := filepath.Join(app.exeDir, fmt.Sprintf("%s.log", AppName))
+			app.log = NewFileLogger(fname)
 		} else {
-			if Mode == AppModeRelease {
-				fname := filepath.Join(app.exeDir, fmt.Sprintf("%s.log", AppName))
-				app.log = NewFileLogger(fname)
-			} else {
-				app.log = NewStdLogger()
-			}
+			app.log = NewStdLogger()
 		}
 	}
 
