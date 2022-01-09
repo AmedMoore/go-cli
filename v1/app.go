@@ -14,10 +14,10 @@ var AppVersion string
 var AppBuild string
 
 type App struct {
-	args *args.ArgsParser
-	cmds []Command
-	vars map[string]interface{}
-	root string
+	args   *args.ArgsParser
+	cmds   []Command
+	vars   map[string]interface{}
+	exeDir string
 }
 
 func initAppInfo() {
@@ -49,12 +49,12 @@ func NewApp(rawArgs []string) *App {
 		log.Fatal(err)
 	}
 
-	// set the app root path
+	// set the app exeDir path
 	exe, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
-	app.root = filepath.Dir(exe)
+	app.exeDir = filepath.Dir(exe)
 
 	app.cmds = make([]Command, 0)
 	app.vars = make(map[string]interface{})
@@ -95,12 +95,12 @@ func (a *App) Get(name string) interface{} {
 	return a.vars[name]
 }
 
-func (a *App) Root() string {
-	return a.root
+func (a *App) ExeDir() string {
+	return a.exeDir
 }
 
 func (a *App) Resolve(path ...string) string {
-	return filepath.Join(append([]string{a.root}, path...)...)
+	return filepath.Join(append([]string{a.exeDir}, path...)...)
 }
 
 func (a *App) Run() {
