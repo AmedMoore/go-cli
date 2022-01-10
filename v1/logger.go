@@ -43,10 +43,58 @@ func (l *Logger) Info() *log.Logger {
 	return l.info
 }
 
+func (l *Logger) Infof(format string, v ...interface{}) {
+	if l.info != nil {
+		l.info.Printf(format, v...)
+	}
+}
+
+func (l *Logger) Infoln(v ...interface{}) {
+	if l.info != nil {
+		l.info.Println(v...)
+	}
+}
+
 func (l *Logger) Warn() *log.Logger {
 	return l.warn
 }
 
+func (l *Logger) Warnf(format string, v ...interface{}) {
+	if l.warn != nil {
+		l.warn.Printf(format, v...)
+	}
+}
+
+func (l *Logger) Warnln(v ...interface{}) {
+	if l.warn != nil {
+		l.warn.Println(v...)
+	}
+}
+
 func (l *Logger) Error() *log.Logger {
 	return l.err
+}
+
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	if l.err != nil {
+		l.err.Printf(format, v...)
+	}
+}
+
+func (l *Logger) Errorln(v ...interface{}) {
+	if l.err != nil {
+		l.err.Println(v...)
+	}
+}
+
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	if l.err != nil {
+		l.err.Fatalf(format, v...)
+	}
+}
+
+func (l *Logger) Fatalln(v ...interface{}) {
+	if l.err != nil {
+		l.err.Fatalln(v...)
+	}
 }
