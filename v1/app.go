@@ -125,6 +125,10 @@ func (a *App) Log() *Logger {
 	return a.log
 }
 
+func (a *App) SetLogger(logger *Logger) {
+	a.log = logger
+}
+
 func (a *App) Mode() AppMode {
 	return Mode
 }
