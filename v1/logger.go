@@ -15,7 +15,7 @@ type Logger struct {
 func NewLogger(out io.Writer, flags ...int) *Logger {
 	l := new(Logger)
 
-	flag := log.Ldate | log.Ltime | log.Llongfile
+	flag := log.Ldate | log.Ltime
 	if len(flags) > 0 {
 		flag = flags[0]
 	}
