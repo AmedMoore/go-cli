@@ -39,62 +39,70 @@ func NewFileLogger(name string, flags ...int) *Logger {
 	return NewLogger(f, flags...)
 }
 
-func (l *Logger) Info() *log.Logger {
-	return l.info
+func (ref *Logger) Info() *log.Logger {
+	return ref.info
 }
 
-func (l *Logger) Infof(format string, v ...interface{}) {
-	if l.info != nil {
-		l.info.Printf(format, v...)
+func (ref *Logger) Infof(format string, v ...interface{}) {
+	if ref.info != nil {
+		ref.info.Printf(format, v...)
 	}
 }
 
-func (l *Logger) Infoln(v ...interface{}) {
-	if l.info != nil {
-		l.info.Println(v...)
+func (ref *Logger) Infoln(v ...interface{}) {
+	if ref.info != nil {
+		ref.info.Println(v...)
 	}
 }
 
-func (l *Logger) Warn() *log.Logger {
-	return l.warn
+func (ref *Logger) Printf(format string, v ...interface{}) {
+	ref.Infof(format, v...)
 }
 
-func (l *Logger) Warnf(format string, v ...interface{}) {
-	if l.warn != nil {
-		l.warn.Printf(format, v...)
+func (ref *Logger) Println(v ...interface{}) {
+	ref.Infoln(v...)
+}
+
+func (ref *Logger) Warn() *log.Logger {
+	return ref.warn
+}
+
+func (ref *Logger) Warnf(format string, v ...interface{}) {
+	if ref.warn != nil {
+		ref.warn.Printf(format, v...)
 	}
 }
 
-func (l *Logger) Warnln(v ...interface{}) {
-	if l.warn != nil {
-		l.warn.Println(v...)
+func (ref *Logger) Warnln(v ...interface{}) {
+	if ref.warn != nil {
+		ref.warn.Println(v...)
 	}
 }
 
-func (l *Logger) Error() *log.Logger {
-	return l.err
+func (ref *Logger) Error() *log.Logger {
+	return ref.err
 }
 
-func (l *Logger) Errorf(format string, v ...interface{}) {
-	if l.err != nil {
-		l.err.Printf(format, v...)
+func (ref *Logger) Errorf(format string, v ...interface{}) {
+	if ref.err != nil {
+		ref.err.Printf(format, v...)
 	}
 }
 
-func (l *Logger) Errorln(v ...interface{}) {
-	if l.err != nil {
-		l.err.Println(v...)
+func (ref *Logger) Errorln(v ...interface{}) {
+	if ref.err != nil {
+		ref.err.Println(v...)
 	}
 }
 
-func (l *Logger) Fatalf(format string, v ...interface{}) {
-	if l.err != nil {
-		l.err.Fatalf(format, v...)
+func (ref *Logger) Fatalf(format string, v ...interface{}) {
+	if ref.err != nil {
+		ref.err.Fatalf(format, v...)
 	}
 }
 
-func (l *Logger) Fatalln(v ...interface{}) {
-	if l.err != nil {
-		l.err.Fatalln(v...)
+func (ref *Logger) Fatalln(v ...interface{}) {
+	if ref.err != nil {
+		ref.err.Fatalln(v...)
 	}
 }
