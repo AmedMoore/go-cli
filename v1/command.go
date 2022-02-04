@@ -1,7 +1,12 @@
 package cli
 
 type Command interface {
-	Name() string
-	Desc() string
 	Run(app *App)
+}
+
+type CommandEntry struct {
+	Name  string
+	Alias string
+	Help  string
+	cmd   Command
 }

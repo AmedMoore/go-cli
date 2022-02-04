@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/akaahmedkamal/go-args"
@@ -16,7 +17,7 @@ var AppBuild string
 
 type App struct {
 	args   *args.ArgsParser
-	cmds   []Command
+	cmds   []CommandEntry
 	vars   map[string]interface{}
 	exeDir string
 	log    *Logger
@@ -58,7 +59,7 @@ func NewApp(rawArgs []string, config ...Config) *App {
 	}
 	app.exeDir = filepath.Dir(exe)
 
-	app.cmds = make([]Command, 0)
+	app.cmds = make([]CommandEntry, 0)
 	app.vars = make(map[string]interface{})
 
 	if len(config) > 0 {
@@ -80,67 +81,97 @@ func NewApp(rawArgs []string, config ...Config) *App {
 	return app
 }
 
-func (a *App) Args() *args.ArgsParser {
-	return a.args
+func (ref *App) Args() *args.ArgsParser {
+	return ref.args
 }
 
-func (a *App) Commands() []Command {
-	return a.cmds
+func (ref *App) Commands() []CommandEntry {
+	return ref.cmds
 }
 
-func (a *App) Command(name string) Command {
-	for _, cmd := range a.cmds {
-		if cmd.Name() == name {
-			return cmd
+func (ref *App) Command(name string) *CommandEntry {
+	for _, cmd := range ref.cmds {
+		if cmd.Name == name {
+			return &cmd
 		}
 	}
 	return nil
 }
 
-func (a *App) Register(cmd Command) {
-	a.cmds = append(a.cmds, cmd)
+func (ref *App) Register(cmd Command) {
+	t := reflect.TypeOf(cmd).Elem()
+	helpField, helpFieldExist := t.FieldByName("help")
+	if !helpFieldExist {
+		ref.LogOrDefault().Fatalln("Invalid command, command must \"have\" help tag")
+	}
+
+	nameField, nameFieldExist := t.FieldByName("name")
+	if !nameFieldExist {
+		ref.LogOrDefault().Fatalln("Invalid command, command must \"name\" help tag")
+	}
+
+	aliasField, aliasFieldExist := t.FieldByName("alias")
+	if !aliasFieldExist {
+		ref.LogOrDefault().Fatalln("Invalid command, command must \"alias\" help tag")
+	}
+
+	entry := CommandEntry{}
+	entry.Help = string(helpField.Tag)
+	entry.Name = string(nameField.Tag)
+	entry.Alias = string(aliasField.Tag)
+	entry.cmd = cmd
+
+	ref.cmds = append(ref.cmds, entry)
 }
 
-func (a *App) Vars() map[string]interface{} {
-	return a.vars
+func (ref *App) Vars() map[string]interface{} {
+	return ref.vars
 }
 
-func (a *App) Set(name string, value interface{}) {
-	a.vars[name] = value
+func (ref *App) Set(name string, value interface{}) {
+	ref.vars[name] = value
 }
 
-func (a *App) Get(name string) interface{} {
-	return a.vars[name]
+func (ref *App) Get(name string) interface{} {
+	return ref.vars[name]
 }
 
-func (a *App) ExeDir() string {
-	return a.exeDir
+func (ref *App) ExeDir() string {
+	return ref.exeDir
 }
 
-func (a *App) Resolve(path ...string) string {
-	return filepath.Join(append([]string{a.exeDir}, path...)...)
+func (ref *App) Resolve(path ...string) string {
+	return filepath.Join(append([]string{ref.exeDir}, path...)...)
 }
 
-func (a *App) Log() *Logger {
-	return a.log
+func (ref *App) Log() *Logger {
+	return ref.log
 }
 
-func (a *App) SetLogger(logger *Logger) {
-	a.log = logger
+func (ref *App) SetLogger(logger *Logger) {
+	ref.log = logger
 }
 
-func (a *App) Mode() AppMode {
+func (ref *App) Mode() AppMode {
 	return Mode
 }
 
-func (a *App) Run() {
-	cmdName := strings.Join(a.args.Positional(), "/")
+func (ref *App) Run() {
+	cmdName := strings.Join(ref.args.Positional(), "/")
 
-	cmd := a.Command(cmdName)
+	cmd := ref.Command(cmdName)
 
 	if cmd == nil {
-		log.Fatal("nothing to do!")
+		ref.LogOrDefault().Println("nothing to do!")
 	}
 
-	cmd.Run(a)
+	cmd.cmd.Run(ref)
+}
+
+func (ref *App) LogOrDefault() *log.Logger {
+	if ref.Log() != nil {
+		return ref.Log().info
+	} else {
+		return log.Default()
+	}
 }
