@@ -319,8 +319,12 @@ func (a *App) getCmdOptions(cmd Command) []Option {
 			opt := Option{}
 			optName := fieldType.Tag.Get("optName")
 			optAlias := fieldType.Tag.Get("optAlias")
-			opt.Name = cmdOptionNamePrefix + optName
-			opt.Alias = cmdOptionAliasPrefix + optAlias
+			if optName != "" {
+				opt.Name = cmdOptionNamePrefix + optName
+			}
+			if optAlias != "" {
+				opt.Alias = cmdOptionAliasPrefix + optAlias
+			}
 			opt.Help = fieldType.Tag.Get("optHelp")
 			options = append(options, opt)
 		}
