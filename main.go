@@ -14,8 +14,10 @@ func main() {
 	// use standard logger by default
 	app.SetLogger(cli.NewStdLogger())
 
-	// register commands
-	app.Register(cmd.NewHelpCmd())
+	// register default help command
+	app.RegisterDefaultHelp()
+
+	// register version command
 	app.Register(cmd.NewVersionCmd())
 
 	// start the app

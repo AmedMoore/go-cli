@@ -16,11 +16,12 @@ var AppVersion string
 var AppBuild string
 
 type App struct {
-	args   *args.ArgsParser
-	cmds   []CommandEntry
-	vars   map[string]interface{}
-	exeDir string
-	log    *Logger
+	args        *args.Parser
+	cmds        []CommandEntry
+	vars        map[string]interface{}
+	exeDir      string
+	log         *Logger
+	defaultHelp bool
 }
 
 func initAppInfo() {
@@ -81,16 +82,16 @@ func NewApp(rawArgs []string, config ...Config) *App {
 	return app
 }
 
-func (ref *App) Args() *args.ArgsParser {
-	return ref.args
+func (a *App) Args() *args.Parser {
+	return a.args
 }
 
-func (ref *App) Commands() []CommandEntry {
-	return ref.cmds
+func (a *App) Commands() []CommandEntry {
+	return a.cmds
 }
 
-func (ref *App) GetCommand(name string) *CommandEntry {
-	for _, cmd := range ref.cmds {
+func (a *App) GetCommand(name string) *CommandEntry {
+	for _, cmd := range a.cmds {
 		if cmd.Name == name || cmd.Alias == name {
 			return &cmd
 		}
@@ -98,13 +99,13 @@ func (ref *App) GetCommand(name string) *CommandEntry {
 	return nil
 }
 
-func (ref *App) LookupCommand(name string) (cmd *CommandEntry, exists bool) {
-	cmd = ref.GetCommand(name)
+func (a *App) LookupCommand(name string) (cmd *CommandEntry, exists bool) {
+	cmd = a.GetCommand(name)
 	exists = cmd != nil
 	return
 }
 
-func (ref *App) Register(cmd Command) {
+func (a *App) Register(cmd Command) {
 	typ := reflect.TypeOf(cmd).Elem()
 	val := reflect.ValueOf(cmd).Elem()
 
@@ -131,11 +132,11 @@ func (ref *App) Register(cmd Command) {
 	}
 
 	if helpField.Type().Name() != "string" {
-		ref.LogOrDefault().Fatalln("Invalid command, command must have \"Help\" field")
+		a.LogOrDefault().Fatalln("Invalid command, command must have \"Help\" field")
 	}
 
 	if nameField.Type().Name() != "string" {
-		ref.LogOrDefault().Fatalln("Invalid command, command must have \"Name\" field")
+		a.LogOrDefault().Fatalln("Invalid command, command must have \"Name\" field")
 	}
 
 	entry := CommandEntry{}
@@ -144,56 +145,201 @@ func (ref *App) Register(cmd Command) {
 	entry.Alias = aliasField.String()
 	entry.cmd = cmd
 
-	ref.cmds = append(ref.cmds, entry)
+	a.cmds = append(a.cmds, entry)
 }
 
-func (ref *App) Vars() map[string]interface{} {
-	return ref.vars
+func (a *App) Vars() map[string]interface{} {
+	return a.vars
 }
 
-func (ref *App) Set(name string, value interface{}) {
-	ref.vars[name] = value
+func (a *App) Set(name string, value interface{}) {
+	a.vars[name] = value
 }
 
-func (ref *App) Get(name string) interface{} {
-	return ref.vars[name]
+func (a *App) Get(name string) interface{} {
+	return a.vars[name]
 }
 
-func (ref *App) ExeDir() string {
-	return ref.exeDir
+func (a *App) ExeDir() string {
+	return a.exeDir
 }
 
-func (ref *App) Resolve(path ...string) string {
-	return filepath.Join(append([]string{ref.exeDir}, path...)...)
+func (a *App) Resolve(path ...string) string {
+	return filepath.Join(append([]string{a.exeDir}, path...)...)
 }
 
-func (ref *App) Log() *Logger {
-	return ref.log
+func (a *App) Log() *Logger {
+	return a.log
 }
 
-func (ref *App) SetLogger(logger *Logger) {
-	ref.log = logger
+func (a *App) SetLogger(logger *Logger) {
+	a.log = logger
 }
 
-func (ref *App) Mode() AppMode {
+func (a *App) Mode() AppMode {
 	return Mode
 }
 
-func (ref *App) Run() {
-	cmdName := strings.Join(ref.args.Positional(), "/")
+func (a *App) Run() {
+	cmdName := strings.Join(a.args.Positional(), "/")
 
-	cmd, exists := ref.LookupCommand(cmdName)
+	cmd, exists := a.LookupCommand(cmdName)
+
+	if a.defaultHelp {
+		if a.Args().HasOption("-h", "--help") {
+			if cmdName == "" {
+				a.PrintHelp()
+			} else if exists {
+				a.PrintHelpForCmd(*cmd)
+			} else {
+				a.PrintHelpForModule(cmdName)
+			}
+			return
+		}
+	}
+
 	if !exists {
-		ref.LogOrDefault().Println("nothing to do!")
+		a.LogOrDefault().Println("nothing to do!")
 	} else {
-		cmd.cmd.Run(ref)
+		a.assignCmdOptions(cmd.cmd)
+		cmd.cmd.Run(a)
 	}
 }
 
-func (ref *App) LogOrDefault() *log.Logger {
-	if ref.Log() != nil {
-		return ref.Log().info
+func (a *App) LogOrDefault() *log.Logger {
+	if a.Log() != nil {
+		return a.Log().info
 	} else {
 		return log.Default()
+	}
+}
+
+func (a *App) PrintHelp() {
+	var longestCmdName string
+	for _, cmd := range a.Commands() {
+		if len(cmd.Name) > len(longestCmdName) {
+			longestCmdName = cmd.Name
+		}
+	}
+
+	cmdNamePadding := "    "
+
+	var commands string
+	for _, cmd := range a.Commands() {
+		cmdName := cmd.Name
+		for len(cmdName) < len(longestCmdName) {
+			cmdName += " "
+		}
+		commands += fmt.Sprintf("  %s%s%s\n", cmdName, cmdNamePadding, cmd.Help)
+	}
+
+	msg := "Usage: %s [command] [options...]\n\nCommands:\n%s"
+
+	if commands != "" {
+		fmt.Printf(msg, AppName, commands)
+	}
+}
+
+func (a *App) PrintHelpForModule(name string) {
+	var longestCmdName string
+	for _, cmd := range a.Commands() {
+		if len(cmd.Name) > len(longestCmdName) {
+			longestCmdName = cmd.Name
+		}
+	}
+
+	cmdNamePadding := "    "
+
+	var commands string
+	for _, cmd := range a.Commands() {
+		if strings.HasPrefix(cmd.Name, name) {
+			cmdName := cmd.Name
+			for len(cmdName) < len(longestCmdName) {
+				cmdName += " "
+			}
+			commands += fmt.Sprintf("  %s%s%s\n", cmdName, cmdNamePadding, cmd.Help)
+		}
+	}
+
+	msg := "Usage: %s %s [command] [options...]\n\nCommands:\n%s"
+
+	if commands != "" {
+		fmt.Printf(msg, AppName, name, commands)
+	}
+}
+
+func (a *App) PrintHelpForCmd(cmd CommandEntry) {
+	options := a.getCmdOptions(cmd.cmd)
+
+	var longestOptName string
+	for _, opt := range options {
+		if len(opt.Name) > len(longestOptName) {
+			longestOptName = opt.Name
+		}
+	}
+
+	optNamePadding := "    "
+
+	var optionsStr string
+	for _, opt := range options {
+		optName := opt.Name
+		for len(optName) < len(longestOptName) {
+			optName += " "
+		}
+		optionsStr += fmt.Sprintf("  %s%s%s\n", optName, optNamePadding, opt.Help)
+	}
+
+	msg := "Usage: %s %s [options...]\n\n%s\n\nOptions:\n%s"
+
+	if optionsStr == "" {
+		optionsStr = "None"
+	}
+
+	fmt.Printf(msg, AppName, cmd.Name, cmd.Help, optionsStr)
+}
+
+func (a *App) RegisterDefaultHelp() {
+	a.defaultHelp = true
+}
+
+func (a *App) getCmdOptions(cmd Command) []Option {
+	typ := reflect.TypeOf(cmd).Elem()
+
+	options := make([]Option, 0)
+
+	for i := 0; i < typ.NumField(); i++ {
+		fieldType := typ.Field(i)
+		cliTag := fieldType.Tag.Get("cli")
+
+		if cliTag == "option" {
+			opt := Option{}
+			opt.Name = fieldType.Tag.Get("optName")
+			opt.Alias = fieldType.Tag.Get("optAlias")
+			opt.Help = fieldType.Tag.Get("optHelp")
+			options = append(options, opt)
+		}
+	}
+
+	return options
+}
+
+func (a *App) assignCmdOptions(cmd Command) {
+	typ := reflect.TypeOf(cmd).Elem()
+	val := reflect.ValueOf(cmd).Elem()
+
+	for i := 0; i < typ.NumField(); i++ {
+		fieldType := typ.Field(i)
+		cliTag := fieldType.Tag.Get("cli")
+
+		if cliTag == "option" {
+			fieldValue := val.Field(i)
+
+			optName := fieldType.Tag.Get("optName")
+			optAlias := fieldType.Tag.Get("optAlias")
+
+			optVal, _ := a.Args().GetString("--"+optName, "-"+optAlias)
+
+			fieldValue.SetString(optVal)
+		}
 	}
 }
