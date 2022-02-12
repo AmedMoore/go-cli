@@ -89,36 +89,40 @@ func (ref *App) Commands() []CommandEntry {
 	return ref.cmds
 }
 
-func (ref *App) Command(name string) *CommandEntry {
+func (ref *App) GetCommand(name string) *CommandEntry {
 	for _, cmd := range ref.cmds {
-		if cmd.Name == name {
+		if cmd.Name == name || cmd.Alias == name {
 			return &cmd
 		}
 	}
 	return nil
 }
 
+func (ref *App) LookupCommand(name string) (cmd *CommandEntry, exists bool) {
+	cmd = ref.GetCommand(name)
+	exists = cmd != nil
+	return
+}
+
 func (ref *App) Register(cmd Command) {
-	t := reflect.TypeOf(cmd).Elem()
-	helpField, helpFieldExist := t.FieldByName("help")
-	if !helpFieldExist {
-		ref.LogOrDefault().Fatalln("Invalid command, command must \"have\" help tag")
+	val := reflect.ValueOf(cmd).Elem()
+
+	helpField := val.FieldByName("Help")
+	if helpField.Type().Name() != "string" {
+		ref.LogOrDefault().Fatalln("Invalid command, command must have \"Help\" field")
 	}
 
-	nameField, nameFieldExist := t.FieldByName("name")
-	if !nameFieldExist {
-		ref.LogOrDefault().Fatalln("Invalid command, command must \"name\" help tag")
+	nameField := val.FieldByName("Name")
+	if nameField.Type().Name() != "string" {
+		ref.LogOrDefault().Fatalln("Invalid command, command must have \"Name\" field")
 	}
 
-	aliasField, aliasFieldExist := t.FieldByName("alias")
-	if !aliasFieldExist {
-		ref.LogOrDefault().Fatalln("Invalid command, command must \"alias\" help tag")
-	}
+	aliasField := val.FieldByName("Alias")
 
 	entry := CommandEntry{}
-	entry.Help = string(helpField.Tag)
-	entry.Name = string(nameField.Tag)
-	entry.Alias = string(aliasField.Tag)
+	entry.Help = helpField.String()
+	entry.Name = nameField.String()
+	entry.Alias = aliasField.String()
 	entry.cmd = cmd
 
 	ref.cmds = append(ref.cmds, entry)
@@ -159,13 +163,12 @@ func (ref *App) Mode() AppMode {
 func (ref *App) Run() {
 	cmdName := strings.Join(ref.args.Positional(), "/")
 
-	cmd := ref.Command(cmdName)
-
-	if cmd == nil {
+	cmd, exists := ref.LookupCommand(cmdName)
+	if !exists {
 		ref.LogOrDefault().Println("nothing to do!")
+	} else {
+		cmd.cmd.Run(ref)
 	}
-
-	cmd.cmd.Run(ref)
 }
 
 func (ref *App) LogOrDefault() *log.Logger {

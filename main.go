@@ -11,9 +11,12 @@ func main() {
 	// create app instance
 	app := cli.NewApp(os.Args[1:])
 
+	// use standard logger by default
+	app.SetLogger(cli.NewStdLogger())
+
 	// register commands
-	app.Register(&cmd.Help{})
-	app.Register(&cmd.Version{})
+	app.Register(cmd.NewHelpCmd())
+	app.Register(cmd.NewVersionCmd())
 
 	// start the app
 	app.Run()

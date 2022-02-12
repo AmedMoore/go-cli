@@ -6,14 +6,18 @@ import (
 	"github.com/akaahmedkamal/go-cli/v1"
 )
 
-type Version struct{}
-
-func (h *Version) Name() string {
-	return "version"
+type Version struct {
+	Name  string
+	Help  string
+	Alias string
 }
 
-func (h *Version) Desc() string {
-	return "display version and build time"
+func NewVersionCmd() *Version {
+	return &Version{
+		Name:  "version",
+		Help:  "print version and build time",
+		Alias: "v",
+	}
 }
 
 func (h *Version) Run(app *cli.App) {
