@@ -276,7 +276,10 @@ func (a *App) PrintHelpForCmd(cmd CommandEntry) {
 
 	var longestOptName string
 	for _, opt := range options {
-		nameAndAlias := opt.Name + ", " + opt.Alias
+		nameAndAlias := opt.Name
+		if opt.Alias != "" {
+			nameAndAlias += ", " + opt.Alias
+		}
 		if len(nameAndAlias) > len(longestOptName) {
 			longestOptName = nameAndAlias
 		}
@@ -286,11 +289,14 @@ func (a *App) PrintHelpForCmd(cmd CommandEntry) {
 
 	var optionsStr string
 	for _, opt := range options {
-		optName := opt.Name + ", " + opt.Alias
-		for len(optName) < len(longestOptName) {
-			optName += " "
+		nameAndAlias := opt.Name
+		if opt.Alias != "" {
+			nameAndAlias += ", " + opt.Alias
 		}
-		optionsStr += fmt.Sprintf("  %s%s%s\n", optName, optNamePadding, opt.Help)
+		for len(nameAndAlias) < len(longestOptName) {
+			nameAndAlias += " "
+		}
+		optionsStr += fmt.Sprintf("  %s%s%s\n", nameAndAlias, optNamePadding, opt.Help)
 	}
 
 	msg := "Usage: %s %s [options...]\n\n%s\n\nOptions:\n%s"
@@ -347,9 +353,17 @@ func (a *App) assignCmdOptions(cmd Command) {
 			optName := fieldType.Tag.Get("optName")
 			optAlias := fieldType.Tag.Get("optAlias")
 
-			optVal, _ := a.Args().GetString(cmdOptionNamePrefix+optName, cmdOptionAliasPrefix+optAlias)
-
-			fieldValue.SetString(optVal)
+			typeName := fieldType.Type.Name()
+			switch typeName {
+			case "string":
+				optVal, _ := a.Args().GetString(cmdOptionNamePrefix+optName, cmdOptionAliasPrefix+optAlias)
+				fieldValue.SetString(optVal)
+			case "bool":
+				optVal := a.Args().HasOption(cmdOptionNamePrefix+optName, cmdOptionAliasPrefix+optAlias)
+				fieldValue.SetBool(optVal)
+			default:
+				a.LogOrDefault().Fatalf("Unsupported option type \"%s\"\n", typeName)
+			}
 		}
 	}
 }
