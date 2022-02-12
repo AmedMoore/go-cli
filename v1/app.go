@@ -15,6 +15,9 @@ var AppName string
 var AppVersion string
 var AppBuild string
 
+var cmdOptionNamePrefix = "--"
+var cmdOptionAliasPrefix = "-"
+
 type App struct {
 	args        *args.Parser
 	cmds        []CommandEntry
@@ -273,8 +276,9 @@ func (a *App) PrintHelpForCmd(cmd CommandEntry) {
 
 	var longestOptName string
 	for _, opt := range options {
-		if len(opt.Name) > len(longestOptName) {
-			longestOptName = opt.Name
+		nameAndAlias := opt.Name + ", " + opt.Alias
+		if len(nameAndAlias) > len(longestOptName) {
+			longestOptName = nameAndAlias
 		}
 	}
 
@@ -282,7 +286,7 @@ func (a *App) PrintHelpForCmd(cmd CommandEntry) {
 
 	var optionsStr string
 	for _, opt := range options {
-		optName := opt.Name
+		optName := opt.Name + ", " + opt.Alias
 		for len(optName) < len(longestOptName) {
 			optName += " "
 		}
@@ -313,8 +317,10 @@ func (a *App) getCmdOptions(cmd Command) []Option {
 
 		if cliTag == "option" {
 			opt := Option{}
-			opt.Name = fieldType.Tag.Get("optName")
-			opt.Alias = fieldType.Tag.Get("optAlias")
+			optName := fieldType.Tag.Get("optName")
+			optAlias := fieldType.Tag.Get("optAlias")
+			opt.Name = cmdOptionNamePrefix + optName
+			opt.Alias = cmdOptionAliasPrefix + optAlias
 			opt.Help = fieldType.Tag.Get("optHelp")
 			options = append(options, opt)
 		}
@@ -337,7 +343,7 @@ func (a *App) assignCmdOptions(cmd Command) {
 			optName := fieldType.Tag.Get("optName")
 			optAlias := fieldType.Tag.Get("optAlias")
 
-			optVal, _ := a.Args().GetString("--"+optName, "-"+optAlias)
+			optVal, _ := a.Args().GetString(cmdOptionNamePrefix+optName, cmdOptionAliasPrefix+optAlias)
 
 			fieldValue.SetString(optVal)
 		}
