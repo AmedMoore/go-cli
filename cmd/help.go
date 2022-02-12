@@ -6,17 +6,16 @@ import (
 	"github.com/akaahmedkamal/go-cli/v1"
 )
 
+// Help command to print help message.
 type Help struct {
-	Name  string
-	Help  string
-	Alias string
+	Name string `cli:"name"`
+	Help string `cli:"help"`
 }
 
 func NewHelpCmd() *Help {
 	return &Help{
-		Name:  "help",
-		Help:  "print help message",
-		Alias: "h",
+		Name: "help",
+		Help: "print help message",
 	}
 }
 

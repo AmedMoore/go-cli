@@ -105,19 +105,38 @@ func (ref *App) LookupCommand(name string) (cmd *CommandEntry, exists bool) {
 }
 
 func (ref *App) Register(cmd Command) {
+	typ := reflect.TypeOf(cmd).Elem()
 	val := reflect.ValueOf(cmd).Elem()
 
-	helpField := val.FieldByName("Help")
+	var helpField reflect.Value
+	var nameField reflect.Value
+	var aliasField reflect.Value
+
+	for i := 0; i < val.NumField(); i++ {
+		fieldType := typ.Field(i)
+		fieldValue := val.Field(i)
+		cliTag := fieldType.Tag.Get("cli")
+
+		if cliTag == "name" {
+			nameField = fieldValue
+		}
+
+		if cliTag == "help" {
+			helpField = fieldValue
+		}
+
+		if cliTag == "alias" {
+			aliasField = fieldValue
+		}
+	}
+
 	if helpField.Type().Name() != "string" {
 		ref.LogOrDefault().Fatalln("Invalid command, command must have \"Help\" field")
 	}
 
-	nameField := val.FieldByName("Name")
 	if nameField.Type().Name() != "string" {
 		ref.LogOrDefault().Fatalln("Invalid command, command must have \"Name\" field")
 	}
-
-	aliasField := val.FieldByName("Alias")
 
 	entry := CommandEntry{}
 	entry.Help = helpField.String()
