@@ -364,6 +364,9 @@ func (a *App) assignCmdOptions(cmd Command) {
 			case "uint":
 				optVal := a.Args().GetInt(cmdOptionNamePrefix+optName, cmdOptionAliasPrefix+optAlias)
 				fieldValue.SetInt(optVal)
+			case "int":
+				optVal := a.Args().GetInt(cmdOptionNamePrefix+optName, cmdOptionAliasPrefix+optAlias)
+				fieldValue.SetInt(optVal)
 			default:
 				a.LogOrDefault().Fatalf("Unsupported option type \"%s\"\n", typeName)
 			}
