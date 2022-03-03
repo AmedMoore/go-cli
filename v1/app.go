@@ -121,7 +121,7 @@ func (a *App) RegisterDefault(cmd Command) {
 	a.defaultCmd = a.makeCommandEntry(cmd)
 }
 
-func (a *App) makeCommandEntry(cmd Command) (entry *CommandEntry) {
+func (a *App) makeCommandEntry(cmd Command) *CommandEntry {
 	typ := reflect.TypeOf(cmd).Elem()
 	val := reflect.ValueOf(cmd).Elem()
 
@@ -155,11 +155,12 @@ func (a *App) makeCommandEntry(cmd Command) (entry *CommandEntry) {
 		a.LogOrDefault().Fatalln("Invalid command, command must have \"Name\" field")
 	}
 
+	entry := &CommandEntry{}
 	entry.Help = helpField.String()
 	entry.Name = nameField.String()
 	entry.Alias = aliasField.String()
 	entry.cmd = cmd
-	return
+	return entry
 }
 
 func (a *App) Vars() map[string]interface{} {
