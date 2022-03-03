@@ -20,11 +20,12 @@ var cmdOptionAliasPrefix = "-"
 
 type App struct {
 	args        *args.Parser
-	cmds        []CommandEntry
+	cmds        []*CommandEntry
 	vars        map[string]interface{}
 	exeDir      string
 	log         *Logger
 	defaultHelp bool
+	defaultCmd  *CommandEntry
 }
 
 func initAppInfo() {
@@ -63,7 +64,7 @@ func NewApp(rawArgs []string, config ...Config) *App {
 	}
 	app.exeDir = filepath.Dir(exe)
 
-	app.cmds = make([]CommandEntry, 0)
+	app.cmds = make([]*CommandEntry, 0)
 	app.vars = make(map[string]interface{})
 
 	if len(config) > 0 {
@@ -74,7 +75,8 @@ func NewApp(rawArgs []string, config ...Config) *App {
 	}
 
 	if app.log == nil {
-		if Mode == AppModeRelease {
+		if //goland:noinspection GoBoolExpressions
+		Mode == AppModeRelease {
 			fname := filepath.Join(app.exeDir, fmt.Sprintf("%s.log", AppName))
 			app.log = NewFileLogger(fname)
 		} else {
@@ -89,14 +91,14 @@ func (a *App) Args() *args.Parser {
 	return a.args
 }
 
-func (a *App) Commands() []CommandEntry {
+func (a *App) Commands() []*CommandEntry {
 	return a.cmds
 }
 
 func (a *App) GetCommand(name string) *CommandEntry {
 	for _, cmd := range a.cmds {
 		if cmd.Name == name || cmd.Alias == name {
-			return &cmd
+			return cmd
 		}
 	}
 	return nil
@@ -109,6 +111,17 @@ func (a *App) LookupCommand(name string) (cmd *CommandEntry, exists bool) {
 }
 
 func (a *App) Register(cmd Command) {
+	a.cmds = append(a.cmds, a.makeCommandEntry(cmd))
+}
+
+// RegisterDefault registers the default command
+// that gets executed when the command name passed
+// to the CLI doesn't match any command name.
+func (a *App) RegisterDefault(cmd Command) {
+	a.defaultCmd = a.makeCommandEntry(cmd)
+}
+
+func (a *App) makeCommandEntry(cmd Command) (entry *CommandEntry) {
 	typ := reflect.TypeOf(cmd).Elem()
 	val := reflect.ValueOf(cmd).Elem()
 
@@ -142,13 +155,11 @@ func (a *App) Register(cmd Command) {
 		a.LogOrDefault().Fatalln("Invalid command, command must have \"Name\" field")
 	}
 
-	entry := CommandEntry{}
 	entry.Help = helpField.String()
 	entry.Name = nameField.String()
 	entry.Alias = aliasField.String()
 	entry.cmd = cmd
-
-	a.cmds = append(a.cmds, entry)
+	return
 }
 
 func (a *App) Vars() map[string]interface{} {
@@ -201,12 +212,19 @@ func (a *App) Run() {
 		}
 	}
 
-	if !exists {
-		a.LogOrDefault().Println("nothing to do!")
-	} else {
+	if exists {
 		a.assignCmdOptions(cmd.cmd)
 		cmd.cmd.Run(a)
+		return
 	}
+
+	if a.defaultCmd != nil {
+		a.assignCmdOptions(a.defaultCmd.cmd)
+		a.defaultCmd.cmd.Run(a)
+		return
+	}
+
+	a.LogOrDefault().Println("nothing to do!")
 }
 
 func (a *App) LogOrDefault() *log.Logger {
