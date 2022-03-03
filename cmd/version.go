@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/akaahmedkamal/go-cli/v1"
+	"github.com/ahmedmkamal/go-cli/v1"
 )
 
 // Version command to print version and build time.

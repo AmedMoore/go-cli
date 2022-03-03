@@ -1,17 +1,36 @@
-APP_NAME=go-cli
-APP_VERSION=v0.1.0
-APP_BUILD=$(shell date -u +%Y-%m-%d.%H:%M)
+TARGET    := go-cli
+VERSION   := v0.14.0
+BUILD     := $(shell date -u +%Y-%m-%d.%H:%M)
 
-GO_PKG=github.com/akaahmedkamal/go-cli
+PKG       := github.com/ahmedmkamal/go-cli
 
-GO_LDFLAGS= -X $(GO_PKG)/v1.AppName=$(APP_NAME) \
-			-X $(GO_PKG)/v1.AppVersion=$(APP_VERSION) \
-			-X $(GO_PKG)/v1.AppBuild=$(APP_BUILD)
+SRC_DIR   := .
+BUILD_DIR := build
+EXE       := $(BUILD_DIR)/$(TARGET)
+
+GO        ?= go
+LDFLAGS   += -X $(PKG)/v1.AppName=$(TARGET)
+LDFLAGS   += -X $(PKG)/v1.AppVersion=$(VERSION)
+LDFLAGS   += -X $(PKG)/v1.AppBuild=$(BUILD)
+
+all: clean build
+
+.PHONY: build
 
 build:
-	go build -ldflags "$(GO_LDFLAGS)" -o bin/$(APP_NAME) .
-.PHONY: build
+	$(GO) build -ldflags "$(LDFLAGS)" -o $(EXE) $(SRC_DIR)
+
+.PHONY: build/debug
+
+build/debug:
+	$(GO) build -tags debug -ldflags "$(LDFLAGS)" -o $(EXE) $(SRC_DIR)
+
+.PHONY: test
 
 test:
 	go test -bench -v ./...
-.PHONY: test
+
+.PHONY: clean
+
+clean:
+	$(RM) -rf $(BUILD_DIR)

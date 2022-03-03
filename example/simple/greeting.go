@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/akaahmedkamal/go-cli/v1"
 	"strings"
+
+	"github.com/ahmedmkamal/go-cli/v1"
 )
 
 type Greeting struct {

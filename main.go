@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/akaahmedkamal/go-cli/cmd"
-	"github.com/akaahmedkamal/go-cli/v1"
+	"github.com/ahmedmkamal/go-cli/cmd"
+	"github.com/ahmedmkamal/go-cli/v1"
 )
 
 func main() {

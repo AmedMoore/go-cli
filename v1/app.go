@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/akaahmedkamal/go-args"
+	"github.com/ahmedmkamal/go-args"
 )
 
 var AppName string
