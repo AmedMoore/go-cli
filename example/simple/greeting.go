@@ -35,6 +35,6 @@ func (g *Greeting) Run(_ *cli.App) {
 	if g.AllCaps {
 		fmt.Println(strings.ToUpper(fmt.Sprintf("Hello, %s!\n", g.Username)))
 	} else {
-		fmt.Println(fmt.Sprintf("Hello, %s!\n", g.Username))
+		fmt.Printf("Hello, %s!\n", g.Username)
 	}
 }
