@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
-	"github.com/ahmedmkamal/go-cli/v1"
+	"github.com/skyareas/go-cli"
 )
 
+// Greeting command to print greeting message.
 type Greeting struct {
 	Name     string `cli:"name"`
 	Help     string `cli:"help"`
@@ -15,6 +17,7 @@ type Greeting struct {
 	AllCaps  bool   `cli:"option" optName:"all-caps" optHelp:"Print message in uppercase form"`
 }
 
+// NewGreetingCmd initializes new greeting command.
 func NewGreetingCmd() *Greeting {
 	return &Greeting{
 		Name:  "greeting",
@@ -23,16 +26,15 @@ func NewGreetingCmd() *Greeting {
 	}
 }
 
-func (g *Greeting) Run(app *cli.App) {
+// Run executes the command's logic.
+func (g *Greeting) Run(_ *cli.App) {
 	if g.Username == "" {
-		app.Log().Fatalln("Option --name is missing")
+		fmt.Println("Option --name is missing")
+		os.Exit(1)
 	}
-
-	msg := fmt.Sprintf("Hello, %s!\n", g.Username)
-
 	if g.AllCaps {
-		msg = strings.ToUpper(msg)
+		fmt.Println(strings.ToUpper(fmt.Sprintf("Hello, %s!\n", g.Username)))
+	} else {
+		fmt.Println(fmt.Sprintf("Hello, %s!\n", g.Username))
 	}
-
-	app.Log().Println(msg)
 }

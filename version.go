@@ -1,10 +1,6 @@
-package cmd
+package cli
 
-import (
-	"fmt"
-
-	"github.com/ahmedmkamal/go-cli/v1"
-)
+import "fmt"
 
 // Version command to print version and build time.
 type Version struct {
@@ -21,11 +17,6 @@ func NewVersionCmd() *Version {
 }
 
 // Run executes the command's logic.
-func (h *Version) Run(_ *cli.App) {
-	fmt.Printf(
-		"%s %s (build %s).\n",
-		cli.AppName,
-		cli.AppVersion,
-		cli.AppBuild,
-	)
+func (h *Version) Run(_ *App) {
+	fmt.Printf("%s %s (build %s).\n", AppName, AppVersion, AppBuild)
 }
