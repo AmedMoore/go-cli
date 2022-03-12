@@ -21,7 +21,7 @@ func (o *Option) setName(field reflect.StructField) {
 func (o *Option) setAlias(field reflect.StructField) {
 	alias := field.Tag.Get("optAlias")
 	if alias != "" {
-		o.Alias = cmdOptionNamePrefix + alias
+		o.Alias = cmdOptionAliasPrefix + alias
 	}
 }
 
@@ -29,6 +29,6 @@ func (o *Option) setAlias(field reflect.StructField) {
 func (o *Option) setHelp(field reflect.StructField) {
 	help := field.Tag.Get("optHelp")
 	if help != "" {
-		o.Help = cmdOptionNamePrefix + help
+		o.Help = help
 	}
 }
