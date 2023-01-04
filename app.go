@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/ahmedmkamal/go-args"
 )
 
 // AppName is the name of the App. Defaults to the binary file name.

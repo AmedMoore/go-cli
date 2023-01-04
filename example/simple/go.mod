@@ -1,6 +1,6 @@
 module github.com/ahmedmkamal/go-cli/example/simple
 
-go 1.15
+go 1.19
 
 require github.com/ahmedmkamal/go-cli v0.0.0
 

@@ -1,5 +1,5 @@
 TARGET    := greeting
-VERSION   := v0.14.0
+VERSION   := v0.18.0
 BUILD     := $(shell date -u +%Y-%m-%d.%H:%M)
 
 PKG       := github.com/ahmedmkamal/go-cli
