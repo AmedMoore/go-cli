@@ -46,28 +46,28 @@ An app instance will always have two commands registered by default `help` and `
 `help` command will print help message for the app or a specific command, given the example above, help command can be used in two forms.
 
 1. `$ myapp help` that will print the following message
-
-```shell
-$ myapp help
-Usage: myapp [command] [options...]
-
-Commands:
-  help        print app or command help message
-  version     print version and build time
-  greeting    Say hi!
-```
+    
+    ```shell
+    $ myapp help
+    Usage: myapp [command] [options...]
+    
+    Commands:
+      help        print app or command help message
+      version     print version and build time
+      greeting    Say hi!
+    ```
 
 2. `$ myapp greeting help` that will print the following message 
-
-```shell
-$ myapp greeting help
-Usage: myapp greeting [options...]
-
-Say hi!
-
-Options:
-  --name, --n    --Username to say hi to
-```
+    
+    ```shell
+    $ myapp greeting help
+    Usage: myapp greeting [options...]
+    
+    Say hi!
+    
+    Options:
+      --name, --n    Username to say hi to
+    ```
 
 ### Command
 

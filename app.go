@@ -185,10 +185,10 @@ func (a *App) LookupCommand(name string) (*CommandEntry, bool) {
 // ensureUnique looks up the command entry on App and exit with error if found.
 func (a *App) ensureUnique(entry *CommandEntry) {
 	if _, exists := a.LookupCommand(entry.Name); exists {
-		a.ExitWithError("command with name \"%s\" already exists\n", entry.Name)
+		a.exitWithError("command with name \"%s\" already exists\n", entry.Name)
 	}
 	if _, exists := a.LookupCommand(entry.Alias); entry.Alias != "" && exists {
-		a.ExitWithError("command with alias \"%s\" already exists\n", entry.Alias)
+		a.exitWithError("command with alias \"%s\" already exists\n", entry.Alias)
 	}
 }
 
@@ -217,7 +217,7 @@ func (a *App) RegisterDefault(cmd Command) *App {
 func (a *App) SetDefaultCommand(name string) *App {
 	cmd, exists := a.LookupCommand(name)
 	if !exists {
-		a.ExitWithError("command named \"%s\" not found\n", name)
+		a.exitWithError("command named \"%s\" not found\n", name)
 	}
 	a.defaultCmd = cmd
 	return a
@@ -242,8 +242,9 @@ func (a *App) Mode() AppMode {
 // arguments and executes the proper command.
 func (a *App) Run() {
 	if err := a.args.Parse(); err != nil {
-		a.ExitWithError(err.Error())
+		a.exitWithError(err.Error())
 	}
+
 	cliArgs := a.args.Positional()
 
 	var cmd *CommandEntry
@@ -261,11 +262,13 @@ func (a *App) Run() {
 		cmd.cmd.Run(a)
 		return
 	}
+
 	if a.defaultCmd != nil {
 		a.assignCmdOptions(a.defaultCmd.cmd)
 		a.defaultCmd.cmd.Run(a)
 		return
 	}
+
 	fmt.Println("nothing to do!")
 }
 
@@ -347,12 +350,12 @@ func (a *App) setCommandOptionValue(fieldType *reflect.StructField, fieldValue *
 	case "int":
 		fieldValue.SetInt(a.Args().GetInt(optName, optAlias))
 	default:
-		a.ExitWithError("unsupported option type \"%s\"\n", typeName)
+		a.exitWithError("unsupported option type \"%s\"\n", typeName)
 	}
 }
 
-// ExitWithError prints out the formatted message and calls os.Exit(1)
-func (a *App) ExitWithError(format string, params ...interface{}) {
+// exitWithError prints out the formatted message and calls os.Exit(1)
+func (a *App) exitWithError(format string, params ...interface{}) {
 	fmt.Printf(format, params...)
 	os.Exit(1)
 }
