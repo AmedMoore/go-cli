@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/skyareas/go-cli"
+	"github.com/ahmedmkamal/go-cli"
 )
 
 // Greeting command to print greeting message.

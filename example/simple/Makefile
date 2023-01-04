@@ -2,7 +2,7 @@ TARGET    := greeting
 VERSION   := v0.14.0
 BUILD     := $(shell date -u +%Y-%m-%d.%H:%M)
 
-PKG       := github.com/skyareas/go-cli
+PKG       := github.com/ahmedmkamal/go-cli
 
 SRC_DIR   := .
 BUILD_DIR := build

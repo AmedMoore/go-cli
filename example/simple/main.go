@@ -1,6 +1,6 @@
 package main
 
-import "github.com/skyareas/go-cli"
+import "github.com/ahmedmkamal/go-cli"
 
 func main() {
 	cli.NewApp().

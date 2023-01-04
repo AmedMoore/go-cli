@@ -1,5 +1,5 @@
-module github.com/skyareas/go-cli
+module github.com/ahmedmkamal/go-cli
 
 go 1.15
 
-require github.com/skyareas/go-args v0.7.0
+require github.com/ahmedmkamal/go-args v0.7.0
