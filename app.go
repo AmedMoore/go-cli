@@ -8,25 +8,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ahmedmkamal/go-args"
+	"github.com/amedmoore/go-args"
 )
 
 // AppName is the name of the App. Defaults to the binary file name.
 // This can be set at build time using
 //
-//	-ldflags -X github.com/ahmedmkamal/go-cli.AppName=[NAME]
+//	-ldflags -X github.com/amedmoore/go-cli.AppName=[NAME]
 var AppName string
 
 // AppVersion is the version of the App. Defaults to 0.1.0.
 // This can be set at build time using
 //
-//	-ldflags -X github.com/ahmedmkamal/go-cli.AppVersion=[VERSION]
+//	-ldflags -X github.com/amedmoore/go-cli.AppVersion=[VERSION]
 var AppVersion string
 
 // AppBuild is the build time of the App. Defaults to modified time of the binary file.
 // This can be set at build time using
 //
-//	-ldflags -X github.com/ahmedmkamal/go-cli.AppBuild=[BUILD]
+//	-ldflags -X github.com/amedmoore/go-cli.AppBuild=[BUILD]
 var AppBuild string
 
 // cmdOptionNamePrefix is the prefix used for the cli option name (i.e. --help).

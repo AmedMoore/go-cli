@@ -10,7 +10,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ahmedmkamal/go-cli"
+	"github.com/amedmoore/go-cli"
 )
 
 // Greeting command to print greeting message.
@@ -101,4 +101,4 @@ type Command struct {
 
 This package is licensed under the [MIT License][license] feel free to use it as you want!
 
-[license]: https://github.com/ahmedmkamal/go-cli/blob/main/LICENSE
+[license]: https://github.com/amedmoore/go-cli/blob/main/LICENSE

@@ -1,5 +1,5 @@
-module github.com/ahmedmkamal/go-cli
+module github.com/amedmoore/go-cli
 
 go 1.19
 
-require github.com/ahmedmkamal/go-args v0.8.0
+require github.com/amedmoore/go-args v0.9.0
